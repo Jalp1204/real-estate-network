@@ -11,11 +11,15 @@ import mongoose from "mongoose";
 // ---------------------------------------------------------------------------
 
 // --- Enum values (exactly as specified for the locked schema) ---
-const PROPERTY_TYPES = ["apartment", "villa", "house", "plot", "commercial"];
+const PROPERTY_TYPES = ["apartment", "house", "commercial"];
 
-const PRICE_TYPES = ["fixed", "negotiable", "starting_from", "on_request"];
+const BHK = [ 1 , 2 , 3 , 4 , 5];
 
-const AREA_UNITS = ["sqft"];
+const PRICE_TYPES = ["fixed", "negotiable", "on_request"];
+
+// Apartment/house may use sqyd or sqft.
+// Commercial properties may use sqyd or sqft depending on the property.
+const AREA_UNITS = ["sqyd" , "sqft"]; 
 
 const POSSESSION_STATUSES = ["ready_to_move", "under_construction", "upcoming"];
 
@@ -37,18 +41,14 @@ const FACINGS = [
 
 const AVAILABILITIES = [
   "available",
-  "needs_confirmation",
-  "under_negotiation",
   "sold",
   "unavailable",
-  "archived",
 ];
 
 const SOURCE_TYPES = ["broker", "owner", "builder", "other"];
 
 const VERIFICATION_STATUSES = [
   "not_checked",
-  "information_provided",
   "partially_verified",
   "verification_completed",
 ];
@@ -58,6 +58,7 @@ const VERIFICATION_INFO_VALUES = ["not_checked", "provided", "checked"];
 
 const PHOTO_CATEGORIES = [
   "exterior",
+  "drawing_room",
   "living_room",
   "bedroom",
   "kitchen",
@@ -73,13 +74,14 @@ const AMENITIES = [
   "lift",
   "parking",
   "gym",
-  "swimming_pool",
   "security",
   "garden",
   "clubhouse",
   "play_area",
   "power_backup",
   "water_supply",
+  "fire_safety",
+  "solar",
 ];
 
 const SPECIALITIES = [
@@ -90,6 +92,7 @@ const SPECIALITIES = [
   "premium_location",
   "large_balcony",
 ];
+
 
 // --- Schema ---
 const propertySchema = new mongoose.Schema(
@@ -107,6 +110,7 @@ const propertySchema = new mongoose.Schema(
 
     bhk: {
       type: Number,
+      enum: BHK,
       default: null,
     },
 
@@ -119,6 +123,7 @@ const propertySchema = new mongoose.Schema(
         type: String,
         enum: PRICE_TYPES,
         required: true,
+        default: "fixed" ,
       },
     },
 
@@ -167,7 +172,7 @@ const propertySchema = new mongoose.Schema(
       },
       parking: {
         type: Number,
-        required: true,
+        default: null,
       },
       furnishing: {
         type: String,
