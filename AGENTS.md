@@ -131,3 +131,33 @@ Do not build any of the following without approval:
 - Repository initialized with documentation only.
 - No application code has been written yet.
 - Schemas are locked and already designed.
+
+## 13. Authoritative Database Schema
+
+The authoritative V1 database schema is defined in:
+
+`docs/database-schema.md`
+
+This document is the single source of truth for:
+
+- collection structure
+- field names
+- field types
+- nested objects
+- enums
+- relationships
+- visibility rules
+- schema boundaries
+
+AI agents MUST read `docs/database-schema.md` before implementing database models or database-related features.
+
+AI agents MUST NOT:
+
+- add schema fields without explicit approval
+- remove schema fields without explicit approval
+- rename schema fields without explicit approval
+- change field types without explicit approval
+- change enum values without explicit approval
+- change collection relationships without explicit approval
+
+If implementation requirements conflict with the schema contract, stop and ask for clarification rather than silently changing the schema.
