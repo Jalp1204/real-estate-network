@@ -1,4 +1,5 @@
 import express from "express";
+import propertyRoutes from "./routes/propertyRoutes.js";
 
 // The Express "app" is created here and kept separate from server.js.
 // This separation keeps the app easy to test and easy to extend later.
@@ -16,5 +17,8 @@ app.get("/api/health", (req, res) => {
     message: "Real Estate Network API is running",
   });
 });
+
+// Property endpoints (read-only).
+app.use("/api/properties", propertyRoutes);
 
 export default app;
