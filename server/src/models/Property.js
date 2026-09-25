@@ -1,4 +1,21 @@
 import mongoose from "mongoose";
+import {
+  PROPERTY_TYPES,
+  BHK,
+  PRICE_TYPES,
+  AREA_UNITS,
+  POSSESSION_STATUSES,
+  POSSESSION_DATE_TYPES,
+  FURNISHINGS,
+  FACINGS,
+  AVAILABILITIES,
+  SOURCE_TYPES,
+  VERIFICATION_STATUSES,
+  VERIFICATION_INFO_VALUES,
+  PHOTO_CATEGORIES,
+  AMENITIES,
+  SPECIALITIES,
+} from "../constants/propertyOptions.js";
 
 // ---------------------------------------------------------------------------
 // Property model
@@ -7,92 +24,10 @@ import mongoose from "mongoose";
 // docs/database-schema.md. Field names, types, nested objects, arrays,
 // enum values, ObjectId relationships and timestamps are preserved exactly.
 //
+// Controlled values live in ../constants/propertyOptions.js.
+//
 // Do not add, remove, rename or retype any field without explicit approval.
 // ---------------------------------------------------------------------------
-
-// --- Enum values (exactly as specified for the locked schema) ---
-const PROPERTY_TYPES = ["apartment", "house", "commercial"];
-
-const BHK = [ 1 , 2 , 3 , 4 , 5];
-
-const PRICE_TYPES = ["fixed", "negotiable", "on_request"];
-
-// Apartment/house may use sqyd or sqft.
-// Commercial properties may use sqyd or sqft depending on the property.
-const AREA_UNITS = ["sqyd" , "sqft"]; 
-
-const POSSESSION_STATUSES = ["ready_to_move", "under_construction", "upcoming"];
-
-const POSSESSION_DATE_TYPES = ["actual", "expected", "not_applicable"];
-
-const FURNISHINGS = ["unfurnished", "semi_furnished", "fully_furnished"];
-
-const FACINGS = [
-  "north",
-  "south",
-  "east",
-  "west",
-  "north_east",
-  "north_west",
-  "south_east",
-  "south_west",
-  "unknown",
-];
-
-const AVAILABILITIES = [
-  "available",
-  "sold",
-  "unavailable",
-];
-
-const SOURCE_TYPES = ["broker", "owner", "builder", "other"];
-
-const VERIFICATION_STATUSES = [
-  "not_checked",
-  "partially_verified",
-  "verification_completed",
-];
-
-// Shared by ownershipInfo, registrationInfo, approvalInfo and loanInfo.
-const VERIFICATION_INFO_VALUES = ["not_checked", "provided", "checked"];
-
-const PHOTO_CATEGORIES = [
-  "exterior",
-  "drawing_room",
-  "living_room",
-  "bedroom",
-  "kitchen",
-  "bathroom",
-  "balcony",
-  "parking",
-  "building",
-  "surroundings",
-  "other",
-];
-
-const AMENITIES = [
-  "lift",
-  "parking",
-  "gym",
-  "security",
-  "garden",
-  "clubhouse",
-  "play_area",
-  "power_backup",
-  "water_supply",
-  "fire_safety",
-  "solar",
-];
-
-const SPECIALITIES = [
-  "corner_unit",
-  "garden_facing",
-  "main_road_facing",
-  "renovated",
-  "premium_location",
-  "large_balcony",
-];
-
 
 // --- Schema ---
 const propertySchema = new mongoose.Schema(
@@ -123,7 +58,7 @@ const propertySchema = new mongoose.Schema(
         type: String,
         enum: PRICE_TYPES,
         required: true,
-        default: "fixed" ,
+        default: "fixed",
       },
     },
 

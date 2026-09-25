@@ -266,6 +266,13 @@ CustomerRequirement {
   updatedAt: Date
 }
 
+### Enumerated values
+
+- **bhk**: `1`, `2`, `3`, `4`, `5`
+- **propertyTypes**: `apartment`, `house`, `commercial`
+- **possession**: `ready_to_move`, `under_construction`, `upcoming`
+- **amenities**: `lift`, `parking`, `gym`, `security`, `garden`, `clubhouse`, `play_area`, `power_backup`, `water_supply`, `fire_safety`, `solar`
+
 # 7. Shortlist
 
 Shortlist {

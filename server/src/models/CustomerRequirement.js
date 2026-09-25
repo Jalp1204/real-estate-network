@@ -1,4 +1,10 @@
 import mongoose from "mongoose";
+import {
+  BHK,
+  PROPERTY_TYPES,
+  POSSESSION_STATUSES,
+  AMENITIES,
+} from "../constants/propertyOptions.js";
 
 // ---------------------------------------------------------------------------
 // CustomerRequirement model
@@ -8,7 +14,10 @@ import mongoose from "mongoose";
 // types, ObjectId relationships, nullable fields and timestamps are preserved
 // exactly.
 //
-// No enums are added: the locked schema specifies String / Number only.
+// Fields that mirror controlled Property options (bhk, propertyTypes,
+// possession, amenities) reuse the shared enums from
+// ../constants/propertyOptions.js so the two models cannot drift apart.
+//
 // There is deliberately NO `maxArea` field.
 //
 // Do not add, remove, rename or retype any field without explicit approval.
@@ -39,11 +48,11 @@ const customerRequirementSchema = new mongoose.Schema(
     },
 
     bhk: {
-      type: [Number],
+      type: [{ type: Number, enum: BHK }],
     },
 
     propertyTypes: {
-      type: [String],
+      type: [{ type: String, enum: PROPERTY_TYPES }],
     },
 
     minArea: {
@@ -52,11 +61,11 @@ const customerRequirementSchema = new mongoose.Schema(
     },
 
     possession: {
-      type: [String],
+      type: [{ type: String, enum: POSSESSION_STATUSES }],
     },
 
     amenities: {
-      type: [String],
+      type: [{ type: String, enum: AMENITIES }],
     },
 
     notes: {
