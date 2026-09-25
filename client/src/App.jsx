@@ -1,12 +1,9 @@
+import PropertyListPage from "./pages/PropertyListPage.jsx";
+
 // Root component of the application.
-// For now it only confirms the frontend foundation is running.
+// For now the app is a single screen: the property list.
 function App() {
-  return (
-    <main className="app">
-      <h1>Real Estate Network</h1>
-      <p>Project foundation is running.</p>
-    </main>
-  );
+  return <PropertyListPage />;
 }
 
 export default App;
