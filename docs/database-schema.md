@@ -199,13 +199,17 @@ Broker {
     lastReviewedAt: Date
   },
 
-  status: String,
+  status: String,                  // enum
 
   notes: String | null,
 
   createdAt: Date,
   updatedAt: Date
 }
+
+### Enumerated values
+
+- **status**: `active`, `under_review`, `inactive`
 
 # 5. Customer
 
