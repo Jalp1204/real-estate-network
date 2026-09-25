@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 // docs/database-schema.md (section: # 4. Broker). Field names, types, nested
 // objects, nullable fields and timestamps are preserved exactly.
 //
-// `status` is defined as String only in the locked schema, so no enum is added.
+// `status` is an enum in the locked schema: active, under_review, inactive.
 // Broker has no ObjectId relationship in the locked schema.
 //
 // Do not add, remove, rename or retype any field without explicit approval.
