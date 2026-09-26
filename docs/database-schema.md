@@ -220,7 +220,7 @@ Customer {
 
   phone: String,
 
-  interestLevel: String,
+  interestLevel: String | null,
 
   interestHistory: [
     {

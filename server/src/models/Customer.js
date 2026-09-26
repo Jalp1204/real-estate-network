@@ -30,7 +30,7 @@ const customerSchema = new mongoose.Schema(
 
     interestLevel: {
       type: String,
-      required: true,
+      default: null,
     },
 
     interestHistory: {

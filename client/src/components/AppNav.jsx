@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
 // Slim, persistent top navigation shown on every screen.
-// Currently exposes the "My Shortlist" entry point so it is easy to find from
-// anywhere. Reuses the existing visual language; contains no app logic.
+// The "Customers" entry is the private/internal area, kept visually separate
+// from the customer-facing presentation links (Shortlist).
 function AppNav() {
   return (
     <header className="app-nav">
@@ -11,12 +11,23 @@ function AppNav() {
           Real Estate Network
         </Link>
 
-        <Link className="app-nav__link" to="/shortlist">
-          <span className="app-nav__icon" aria-hidden="true">
-            ★
-          </span>
-          <span>My Shortlist</span>
-        </Link>
+        <div className="app-nav__links">
+          <Link className="app-nav__link" to="/shortlist">
+            <span className="app-nav__icon" aria-hidden="true">
+              ★
+            </span>
+            <span>My Shortlist</span>
+          </Link>
+
+          <span className="app-nav__divider" aria-hidden="true" />
+
+          <Link className="app-nav__link app-nav__link--private" to="/customers">
+            <span className="app-nav__icon" aria-hidden="true">
+              🔒
+            </span>
+            <span>Customers</span>
+          </Link>
+        </div>
       </nav>
     </header>
   );
