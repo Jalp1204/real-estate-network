@@ -7,13 +7,18 @@
 const PROPERTIES_ENDPOINT = "/api/properties";
 
 // GET /api/properties
-// Returns the array of properties. Throws a useful Error when the request
-// fails so the caller can render an error state.
-export async function getProperties() {
+// Returns the array of properties. When `locationId` is provided the request
+// is filtered to that location. Throws a useful Error when the request fails
+// so the caller can render an error state.
+export async function getProperties(locationId) {
+  const url = locationId
+    ? `${PROPERTIES_ENDPOINT}?location=${encodeURIComponent(locationId)}`
+    : PROPERTIES_ENDPOINT;
+
   let response;
 
   try {
-    response = await fetch(PROPERTIES_ENDPOINT);
+    response = await fetch(url);
   } catch {
     throw new Error("Unable to reach the server.");
   }

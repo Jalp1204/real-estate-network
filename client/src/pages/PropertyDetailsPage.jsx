@@ -34,7 +34,7 @@ function PropertyDetailsPage() {
 
   return (
     <main className="app">
-      <Link className="back-link" to="/">
+      <Link className="back-link" to="/properties">
         ← Back to properties
       </Link>
 

@@ -1,12 +1,28 @@
 import mongoose from "mongoose";
 import Property from "../models/Property.js";
-import Location from "../models/Location.js";
 
-// GET /api/properties
-// Returns all properties, most recently updated first, with their location.
+// GET /api/properties?location=<locationId>
+// Returns properties, most recently updated first, with their location.
+// When a `location` query parameter is supplied, results are filtered to that
+// location; otherwise the existing all-properties behavior is unchanged.
 export async function getProperties(req, res) {
+  const { location } = req.query;
+
+  const filter = {};
+
+  if (location) {
+    // Validate the location id format so a bad value is a 400, not a 500.
+    if (!mongoose.Types.ObjectId.isValid(location)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid location ID",
+      });
+    }
+    filter.locationId = location;
+  }
+
   try {
-    const properties = await Property.find()
+    const properties = await Property.find(filter)
       .populate("locationId")
       .sort({ updatedAt: -1 });
 
