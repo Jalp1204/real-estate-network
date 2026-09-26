@@ -33,6 +33,64 @@ body {
 
 /* --- Layout --- */
 
+/* Persistent top navigation */
+.app-nav {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.app-nav__brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.app-nav__brand:hover {
+  color: var(--color-primary);
+}
+
+.app-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-nav__link:hover {
+  background-color: var(--color-badge-bg);
+  border-color: #c7d2fe;
+}
+
+.app-nav__brand:focus-visible,
+.app-nav__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.app-nav__icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .app {
   max-width: 1080px;
   margin: 0 auto;
