@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Property from "../models/Property.js";
+import Location from "../models/Location.js";
 
 // GET /api/properties
 // Returns all properties, most recently updated first, with their location.
