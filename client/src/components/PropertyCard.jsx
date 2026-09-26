@@ -8,12 +8,16 @@ import ShortlistButton from "./ShortlistButton.jsx";
 // is a separate real <button> (not nested inside the link) so both remain
 // accessible and independently operable.
 //
+// `actions` is an optional extra control rendered next to the shortlist button
+// (used by the shortlist page to add compare selection). It defaults to null so
+// other usages are unchanged.
+//
 // Shows only customer-safe, list-relevant information. Internal data
 // (broker details, internal notes, verification notes, trust score, IDs) is
 // deliberately never rendered.
 //
 // Missing/nullable data is handled gracefully: sections are simply omitted.
-function PropertyCard({ property }) {
+function PropertyCard({ property, actions = null }) {
   const location = property?.locationId;
 
   const price = property?.price ?? {};
@@ -75,6 +79,7 @@ function PropertyCard({ property }) {
 
       <div className="property-card__actions">
         <ShortlistButton propertyId={property?._id} />
+        {actions}
       </div>
     </article>
   );

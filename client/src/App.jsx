@@ -8,6 +8,7 @@ import BudgetLocationPage from "./pages/BudgetLocationPage.jsx";
 import PropertyListPage from "./pages/PropertyListPage.jsx";
 import PropertyDetailsPage from "./pages/PropertyDetailsPage.jsx";
 import ShortlistPage from "./pages/ShortlistPage.jsx";
+import ComparePage from "./pages/ComparePage.jsx";
 
 // Root component of the application.
 // Defines the routes; the browser router itself is set up in main.jsx.
@@ -24,6 +25,7 @@ function App() {
         <Route path="/properties" element={<PropertyListPage />} />
         <Route path="/properties/:id" element={<PropertyDetailsPage />} />
         <Route path="/shortlist" element={<ShortlistPage />} />
+        <Route path="/compare" element={<ComparePage />} />
       </Routes>
     </>
   );
