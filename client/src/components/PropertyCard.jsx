@@ -1,27 +1,14 @@
-// Presentational card for a single property.
+import { Link } from "react-router-dom";
+import { humanize, formatNumber } from "../utils/format.js";
+
+// Presentational card for a single property in the list.
 //
+// The whole card links to the property details screen.
 // Shows only customer-safe, list-relevant information. Internal data
 // (broker details, internal notes, verification notes, trust score, IDs) is
 // deliberately never rendered.
 //
 // Missing/nullable data is handled gracefully: sections are simply omitted.
-
-// "ready_to_move" -> "Ready To Move"
-function humanize(value) {
-  if (!value || typeof value !== "string") return null;
-  return value
-    .split("_")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-// 2500000 -> "25,00,000" (Indian digit grouping)
-function formatNumber(value) {
-  if (typeof value !== "number" || Number.isNaN(value)) return null;
-  return value.toLocaleString("en-IN");
-}
-
 function PropertyCard({ property }) {
   const location = property?.locationId;
 
@@ -47,39 +34,41 @@ function PropertyCard({ property }) {
   const metaItems = [bhk, area, propertyType].filter(Boolean);
 
   return (
-    <article className="property-card">
-      <div className="property-card__top">
-        <h2 className="property-card__title">{property?.title}</h2>
-        {availability && (
-          <span className="property-card__badge">{availability}</span>
+    <Link className="property-card-link" to={`/properties/${property?._id}`}>
+      <article className="property-card">
+        <div className="property-card__top">
+          <h2 className="property-card__title">{property?.title}</h2>
+          {availability && (
+            <span className="property-card__badge">{availability}</span>
+          )}
+        </div>
+
+        {formattedAmount && (
+          <p className="property-card__price">
+            ₹{formattedAmount}
+            {priceType && (
+              <span className="property-card__price-type"> · {priceType}</span>
+            )}
+          </p>
         )}
-      </div>
 
-      {formattedAmount && (
-        <p className="property-card__price">
-          ₹{formattedAmount}
-          {priceType && <span className="property-card__price-type"> · {priceType}</span>}
-        </p>
-      )}
+        {metaItems.length > 0 && (
+          <ul className="property-card__meta">
+            {metaItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        )}
 
-      {metaItems.length > 0 && (
-        <ul className="property-card__meta">
-          {metaItems.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      )}
+        {(locationName || city) && (
+          <p className="property-card__location">
+            {[locationName, city].filter(Boolean).join(", ")}
+          </p>
+        )}
 
-      {(locationName || city) && (
-        <p className="property-card__location">
-          {[locationName, city].filter(Boolean).join(", ")}
-        </p>
-      )}
-
-      {possession && (
-        <p className="property-card__possession">{possession}</p>
-      )}
-    </article>
+        {possession && <p className="property-card__possession">{possession}</p>}
+      </article>
+    </Link>
   );
 }
 

@@ -4,7 +4,8 @@ import PropertyCard from "../components/PropertyCard.jsx";
 
 // Property list screen.
 // Fetches the property list on mount and renders loading / error / empty /
-// populated states. No filtering, sorting, search or routing yet.
+// populated states. Each card links to the property details screen.
+// No filtering, sorting, search or pagination yet.
 function PropertyListPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);

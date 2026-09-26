@@ -35,3 +35,41 @@ export async function getProperties() {
 
   return payload.data;
 }
+
+// GET /api/properties/:id
+// Returns a single property. Throws an Error with code "NOT_FOUND" when the
+// property does not exist (or the id is malformed), so the caller can show a
+// distinct "not found" state. Other failures throw a generic Error.
+export async function getPropertyById(id) {
+  let response;
+
+  try {
+    response = await fetch(`${PROPERTIES_ENDPOINT}/${id}`);
+  } catch {
+    throw new Error("Unable to reach the server.");
+  }
+
+  // 404 = no such property; 400 = malformed id. Both are "not found" to a user.
+  if (response.status === 404 || response.status === 400) {
+    const error = new Error("Property not found.");
+    error.code = "NOT_FOUND";
+    throw error;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}.`);
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Received an invalid response from the server.");
+  }
+
+  if (!payload || payload.success !== true || !payload.data) {
+    throw new Error("Unexpected response from the server.");
+  }
+
+  return payload.data;
+}
