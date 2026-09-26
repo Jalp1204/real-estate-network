@@ -13,7 +13,9 @@ function initials(name) {
 }
 
 // Presentational card for a single location in the discovery list.
-function LocationCard({ location }) {
+// `to` is the target URL chosen by the caller (the discovery flow decides where
+// selecting a location should lead).
+function LocationCard({ location, to }) {
   const propertyCount =
     typeof location?.propertyCount === "number" ? location.propertyCount : 0;
   const cityState = [location?.city, location?.state].filter(Boolean).join(", ");
@@ -48,10 +50,7 @@ function LocationCard({ location }) {
           <p className="location-card__description">{location.description}</p>
         )}
 
-        <Link
-          className="button-link"
-          to={`/properties?location=${location?._id}`}
-        >
+        <Link className="button-link" to={to}>
           View Properties
         </Link>
       </div>

@@ -1,19 +1,9 @@
 import { Link } from "react-router-dom";
 import { BUDGET_OPTIONS } from "../constants/budgetOptions.js";
+import BudgetCard from "../components/BudgetCard.jsx";
 
-// Builds the property-list link for a budget option. The final "1 Crore+"
-// option only sets budgetMin (meaning "and above").
-function budgetLink(option) {
-  const params = new URLSearchParams();
-  params.set("budgetMin", String(option.budgetMin));
-  if (option.budgetMax != null) {
-    params.set("budgetMax", String(option.budgetMax));
-  }
-  return `/properties?${params.toString()}`;
-}
-
-// Budget discovery screen. Lists price ranges; each links to the property list
-// filtered by budget.
+// Budget discovery screen (step 1 of "Search by Budget"). Lists price ranges;
+// selecting one continues to the location step for that budget.
 function BudgetListPage() {
   return (
     <main className="app">
@@ -28,10 +18,7 @@ function BudgetListPage() {
 
       <div className="budget-grid">
         {BUDGET_OPTIONS.map((option) => (
-          <Link key={option.id} className="budget-card" to={budgetLink(option)}>
-            <span className="budget-card__label">{option.label}</span>
-            <span className="budget-card__hint">{option.hint}</span>
-          </Link>
+          <BudgetCard key={option.id} option={option} to={`/budget/${option.id}`} />
         ))}
       </div>
     </main>

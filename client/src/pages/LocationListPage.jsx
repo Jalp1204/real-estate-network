@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { getLocations } from "../api/locations.js";
 import LocationCard from "../components/LocationCard.jsx";
 
-// Location discovery screen. Lists active locations so the customer can pick an
-// area; each card links to the property list filtered by that location.
+// Location discovery screen (step 1 of "Search by Location"). Lists active
+// locations; selecting one continues to the budget step for that location.
 function LocationListPage() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,11 @@ function LocationListPage() {
       {!loading && !error && locations.length > 0 && (
         <div className="location-grid">
           {locations.map((location) => (
-            <LocationCard key={location._id} location={location} />
+            <LocationCard
+              key={location._id}
+              location={location}
+              to={`/locations/${location._id}`}
+            />
           ))}
         </div>
       )}
