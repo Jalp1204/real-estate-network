@@ -5,7 +5,21 @@ import {
   PROPERTY_TYPES,
   POSSESSION_STATUSES,
   FURNISHINGS,
+  PROPERTY_SORTS,
 } from "../constants/propertyOptions.js";
+
+// Default sort: most recently updated first.
+const DEFAULT_SORT = "recent";
+
+// Simple sort specs expressible with a plain Mongoose `.sort()`.
+// possession_asc is handled separately (it needs dated-before-undated ordering).
+const SORT_SPECS = {
+  recent: { updatedAt: -1 },
+  price_asc: { "price.amount": 1 },
+  price_desc: { "price.amount": -1 },
+  area_asc: { area: 1 },
+  area_desc: { area: -1 },
+};
 
 // Application error carrying the HTTP status the controller should use.
 // Keeps validation semantics out of the controller without a global error
@@ -141,8 +155,68 @@ function buildFilter(filters = {}) {
   return filter;
 }
 
+// Resolves the optional `sort` query parameter to one of the shared
+// PROPERTY_SORTS values. Absent means the default; an unknown value is a 400.
+function resolveSort(raw) {
+  if (raw === undefined || raw === "") {
+    return DEFAULT_SORT;
+  }
+
+  if (typeof raw !== "string" || !PROPERTY_SORTS.includes(raw)) {
+    throw new PropertyServiceError("Invalid sort parameter", 400);
+  }
+
+  return raw;
+}
+
+// possession_asc: "earliest practical possession" ordering.
+//   1. ready_to_move properties first (available now),
+//   2. then other properties that have a usable possession.date, earliest date
+//      first,
+//   3. then the rest, most recently updated first.
+//
+// Mongo's plain `.sort()` cannot express this multi-group ordering in a single
+// pass, so we run three partition queries with the existing query API and
+// concatenate. Each partition applies the same base `filter` (via `$and`) so a
+// user's filters are never clobbered. Groups 2 and 3 explicitly exclude
+// ready_to_move so no document can appear twice.
+async function findSortedByPossession(filter) {
+  const readyToMove = await Property.find({
+    $and: [filter, { "possession.status": "ready_to_move" }],
+  })
+    .populate("locationId")
+    .sort({ updatedAt: -1 });
+
+  const dated = await Property.find({
+    $and: [
+      filter,
+      {
+        "possession.status": { $ne: "ready_to_move" },
+        "possession.date": { $ne: null },
+      },
+    ],
+  })
+    .populate("locationId")
+    .sort({ "possession.date": 1 });
+
+  const undated = await Property.find({
+    $and: [
+      filter,
+      {
+        "possession.status": { $ne: "ready_to_move" },
+        "possession.date": null,
+      },
+    ],
+  })
+    .populate("locationId")
+    .sort({ updatedAt: -1 });
+
+  return [...readyToMove, ...dated, ...undated];
+}
+
 // GET /api/properties
-// Returns properties, most recently updated first, with their location.
+// Returns properties, most recently updated first by default, with their
+// location.
 //
 // Supported (all optional, combinable) filters:
 //   - location:     property.locationId === location
@@ -153,12 +227,20 @@ function buildFilter(filters = {}) {
 //   - minArea:      property.area >= minArea
 //   - possession:   property.possession.status === possession
 //   - furnishing:   property.details.furnishing === furnishing
+//
+// Supported sort modes: recent (default), price_asc, price_desc, area_asc,
+// area_desc, possession_asc.
 export async function getProperties(filters = {}) {
   const filter = buildFilter(filters);
+  const sort = resolveSort(filters.sort);
+
+  if (sort === "possession_asc") {
+    return findSortedByPossession(filter);
+  }
 
   return Property.find(filter)
     .populate("locationId")
-    .sort({ updatedAt: -1 });
+    .sort(SORT_SPECS[sort]);
 }
 
 // GET /api/properties/:id

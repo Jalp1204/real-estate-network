@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { getProperties } from "../api/properties.js";
 import PropertyCard from "../components/PropertyCard.jsx";
 import PropertyFilters from "../components/PropertyFilters.jsx";
-import { PROPERTY_FILTER_KEYS } from "../constants/propertyFilterOptions.js";
+import { PROPERTY_FILTER_KEYS, SORT_OPTIONS, DEFAULT_SORT } from "../constants/propertyFilterOptions.js";
 import { humanize, formatNumber, formatRupeesShort } from "../utils/format.js";
 
 function toNumber(raw) {
@@ -33,6 +33,7 @@ function PropertyListPage() {
   const minAreaParam = searchParams.get("minArea") || "";
   const possessionParam = searchParams.get("possession") || "";
   const furnishingParam = searchParams.get("furnishing") || "";
+  const sortParam = searchParams.get("sort") || "";
 
   const hasBudget = Boolean(budgetMinParam || budgetMaxParam);
   const hasNewFilters = Boolean(
@@ -58,6 +59,7 @@ function PropertyListPage() {
         minArea: minAreaParam,
         possession: possessionParam,
         furnishing: furnishingParam,
+        sort: sortParam,
       });
       setProperties(data);
     } catch {
@@ -75,6 +77,7 @@ function PropertyListPage() {
     minAreaParam,
     possessionParam,
     furnishingParam,
+    sortParam,
   ]);
 
   useEffect(() => {
@@ -82,6 +85,8 @@ function PropertyListPage() {
   }, [loadProperties]);
 
   // Applies the filter-panel draft to the URL, preserving location/budget.
+  // Sort is written separately; an explicit "recent" is stored as no parameter
+  // (the default), keeping the URL clean.
   const handleApply = (draft) => {
     const next = new URLSearchParams(searchParams);
     for (const key of PROPERTY_FILTER_KEYS) {
@@ -92,15 +97,25 @@ function PropertyListPage() {
         next.delete(key);
       }
     }
+
+    const sortValue = (draft.sort ?? "").trim();
+    if (sortValue && sortValue !== DEFAULT_SORT) {
+      next.set("sort", sortValue);
+    } else {
+      next.delete("sort");
+    }
+
     setSearchParams(next);
   };
 
-  // Clears only the filter-panel parameters; location/budget are preserved.
+  // Clears the filter-panel parameters and resets sort to the default,
+  // while preserving location/budget.
   const handleClear = () => {
     const next = new URLSearchParams(searchParams);
     for (const key of PROPERTY_FILTER_KEYS) {
       next.delete(key);
     }
+    next.delete("sort");
     setSearchParams(next);
   };
 
@@ -174,6 +189,12 @@ function PropertyListPage() {
     }
   }
 
+  // Sort summary, shown only when a non-default sort is active.
+  const sortLabel =
+    sortParam && sortParam !== DEFAULT_SORT
+      ? SORT_OPTIONS.find((option) => option.value === sortParam)?.label ?? null
+      : null;
+
   const subText = locationId && hasBudget
     ? "Available properties in this area and budget range."
     : locationId
@@ -207,6 +228,7 @@ function PropertyListPage() {
           <p className="budget-summary">{budgetSummary}</p>
         )}
         {filterSummary && <p className="filter-summary">{filterSummary}</p>}
+        {sortLabel && <p className="filter-summary">Sorted by {sortLabel}</p>}
         <p>{subText}</p>
       </header>
 
@@ -217,6 +239,7 @@ function PropertyListPage() {
           minArea: minAreaParam,
           possession: possessionParam,
           furnishing: furnishingParam,
+          sort: sortParam || DEFAULT_SORT,
         }}
         onApply={handleApply}
         onClear={handleClear}

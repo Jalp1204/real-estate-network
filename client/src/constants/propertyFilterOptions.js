@@ -41,3 +41,15 @@ export const PROPERTY_FILTER_KEYS = [
   "possession",
   "furnishing",
 ];
+
+// Sort modes for the list. Mirrors the backend PROPERTY_SORTS constant.
+export const DEFAULT_SORT = "recent";
+
+export const SORT_OPTIONS = [
+  { value: "recent", label: "Recently Updated" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "area_asc", label: "Area: Small to Large" },
+  { value: "area_desc", label: "Area: Large to Small" },
+  { value: "possession_asc", label: "Possession: Earliest" },
+];

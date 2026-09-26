@@ -86,3 +86,13 @@ export const SPECIALITIES = [
   "premium_location",
   "large_balcony",
 ];
+
+// Supported sort modes for GET /api/properties. The first value is the default.
+export const PROPERTY_SORTS = [
+  "recent",
+  "price_asc",
+  "price_desc",
+  "area_asc",
+  "area_desc",
+  "possession_asc",
+];

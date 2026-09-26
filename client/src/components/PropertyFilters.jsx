@@ -4,6 +4,8 @@ import {
   PROPERTY_TYPE_OPTIONS,
   POSSESSION_OPTIONS,
   FURNISHING_OPTIONS,
+  SORT_OPTIONS,
+  DEFAULT_SORT,
 } from "../constants/propertyFilterOptions.js";
 
 // Draft shape used while the user is editing the form.
@@ -13,6 +15,7 @@ const EMPTY_DRAFT = {
   minArea: "",
   possession: "",
   furnishing: "",
+  sort: DEFAULT_SORT,
 };
 
 // Where filters are edited and applied.
@@ -32,6 +35,7 @@ function PropertyFilters({ filters, onApply, onClear }) {
     filters.minArea,
     filters.possession,
     filters.furnishing,
+    filters.sort,
   ]);
 
   const update = (key) => (event) =>
@@ -113,6 +117,21 @@ function PropertyFilters({ filters, onApply, onClear }) {
           >
             <option value="">Any</option>
             {FURNISHING_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="filters__field">
+          <span className="filters__label">Sort By</span>
+          <select
+            className="filters__control"
+            value={draft.sort}
+            onChange={update("sort")}
+          >
+            {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>

@@ -16,6 +16,8 @@ const PROPERTIES_ENDPOINT = "/api/properties";
 //   minArea      -> property.area >= minArea
 //   possession   -> property.possession.status
 //   furnishing   -> property.details.furnishing
+//   sort         -> result ordering (recent, price_asc, price_desc, area_asc,
+//                   area_desc, possession_asc)
 // Throws a useful Error when the request fails so the caller can render an
 // error state.
 export async function getProperties({
@@ -27,6 +29,7 @@ export async function getProperties({
   minArea,
   possession,
   furnishing,
+  sort,
 } = {}) {
   const params = new URLSearchParams();
   if (locationId) params.set("location", locationId);
@@ -37,6 +40,7 @@ export async function getProperties({
   if (minArea != null && minArea !== "") params.set("minArea", String(minArea));
   if (possession) params.set("possession", possession);
   if (furnishing) params.set("furnishing", furnishing);
+  if (sort) params.set("sort", sort);
 
   const query = params.toString();
   const url = query ? `${PROPERTIES_ENDPOINT}?${query}` : PROPERTIES_ENDPOINT;
