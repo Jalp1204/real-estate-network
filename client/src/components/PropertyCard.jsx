@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
 import { humanize, formatNumber } from "../utils/format.js";
+import ShortlistButton from "./ShortlistButton.jsx";
 
-// Presentational card for a single property in the list.
+// Card for a single property in the list.
 //
-// The whole card links to the property details screen.
+// The main content links to the property details screen; the shortlist control
+// is a separate real <button> (not nested inside the link) so both remain
+// accessible and independently operable.
+//
 // Shows only customer-safe, list-relevant information. Internal data
 // (broker details, internal notes, verification notes, trust score, IDs) is
 // deliberately never rendered.
@@ -34,8 +38,8 @@ function PropertyCard({ property }) {
   const metaItems = [bhk, area, propertyType].filter(Boolean);
 
   return (
-    <Link className="property-card-link" to={`/properties/${property?._id}`}>
-      <article className="property-card">
+    <article className="property-card">
+      <Link className="property-card-link" to={`/properties/${property?._id}`}>
         <div className="property-card__top">
           <h2 className="property-card__title">{property?.title}</h2>
           {availability && (
@@ -67,8 +71,12 @@ function PropertyCard({ property }) {
         )}
 
         {possession && <p className="property-card__possession">{possession}</p>}
-      </article>
-    </Link>
+      </Link>
+
+      <div className="property-card__actions">
+        <ShortlistButton propertyId={property?._id} />
+      </div>
+    </article>
   );
 }
 

@@ -4,6 +4,7 @@ import { getPropertyById } from "../api/properties.js";
 import PropertyGallery from "../components/PropertyGallery.jsx";
 import PropertyFacts from "../components/PropertyFacts.jsx";
 import PropertyChips from "../components/PropertyChips.jsx";
+import ShortlistButton from "../components/ShortlistButton.jsx";
 import { humanize, formatNumber, formatDate } from "../utils/format.js";
 
 // Property details screen.
@@ -136,6 +137,10 @@ function PropertyDetails({ property }) {
             {[locationName, city].filter(Boolean).join(", ")}
           </p>
         )}
+
+        <div className="details__actions">
+          <ShortlistButton propertyId={property?._id} />
+        </div>
       </header>
 
       <PropertyGallery photos={property?.photos} title={property?.title} />
