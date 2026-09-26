@@ -8,16 +8,35 @@ const PROPERTIES_ENDPOINT = "/api/properties";
 
 // GET /api/properties
 // Returns the array of properties. Optional filters:
-//   locationId  -> only that location
-//   budgetMin   -> price.amount >= budgetMin
-//   budgetMax   -> price.amount <= budgetMax
+//   locationId   -> only that location
+//   budgetMin    -> price.amount >= budgetMin
+//   budgetMax    -> price.amount <= budgetMax
+//   bhk          -> property.bhk
+//   propertyType -> property.propertyType
+//   minArea      -> property.area >= minArea
+//   possession   -> property.possession.status
+//   furnishing   -> property.details.furnishing
 // Throws a useful Error when the request fails so the caller can render an
 // error state.
-export async function getProperties({ locationId, budgetMin, budgetMax } = {}) {
+export async function getProperties({
+  locationId,
+  budgetMin,
+  budgetMax,
+  bhk,
+  propertyType,
+  minArea,
+  possession,
+  furnishing,
+} = {}) {
   const params = new URLSearchParams();
   if (locationId) params.set("location", locationId);
-  if (budgetMin != null) params.set("budgetMin", String(budgetMin));
-  if (budgetMax != null) params.set("budgetMax", String(budgetMax));
+  if (budgetMin != null && budgetMin !== "") params.set("budgetMin", String(budgetMin));
+  if (budgetMax != null && budgetMax !== "") params.set("budgetMax", String(budgetMax));
+  if (bhk != null && bhk !== "") params.set("bhk", String(bhk));
+  if (propertyType) params.set("propertyType", propertyType);
+  if (minArea != null && minArea !== "") params.set("minArea", String(minArea));
+  if (possession) params.set("possession", possession);
+  if (furnishing) params.set("furnishing", furnishing);
 
   const query = params.toString();
   const url = query ? `${PROPERTIES_ENDPOINT}?${query}` : PROPERTIES_ENDPOINT;

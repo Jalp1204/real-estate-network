@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getProperties } from "../api/properties.js";
 import PropertyCard from "../components/PropertyCard.jsx";
-import { formatRupeesShort } from "../utils/format.js";
+import PropertyFilters from "../components/PropertyFilters.jsx";
+import { PROPERTY_FILTER_KEYS } from "../constants/propertyFilterOptions.js";
+import { humanize, formatNumber, formatRupeesShort } from "../utils/format.js";
 
 function toNumber(raw) {
   if (!raw) return null;
@@ -14,17 +16,29 @@ function toNumber(raw) {
 // Fetches the property list on mount and renders loading / error / empty /
 // populated states. Each card links to the property details screen.
 //
-// Supports optional, combinable query filters:
-//   ?location=<id>                          -> single location
-//   ?budgetMin=<n>&budgetMax=<n>            -> price range
+// The URL is the source of truth for filters. Supports optional, combinable
+// query parameters:
+//   ?location=<id>
+//   ?budgetMin=<n>&budgetMax=<n>
+//   ?bhk=<n>&propertyType=<v>&minArea=<n>&possession=<v>&furnishing=<v>
 // With no query parameters the full list is shown (unchanged behavior).
 function PropertyListPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const locationId = searchParams.get("location") || null;
   const budgetMinParam = searchParams.get("budgetMin") || null;
   const budgetMaxParam = searchParams.get("budgetMax") || null;
+  const bhkParam = searchParams.get("bhk") || "";
+  const propertyTypeParam = searchParams.get("propertyType") || "";
+  const minAreaParam = searchParams.get("minArea") || "";
+  const possessionParam = searchParams.get("possession") || "";
+  const furnishingParam = searchParams.get("furnishing") || "";
+
   const hasBudget = Boolean(budgetMinParam || budgetMaxParam);
-  const isFiltered = Boolean(locationId || hasBudget);
+  const hasNewFilters = Boolean(
+    bhkParam || propertyTypeParam || minAreaParam || possessionParam || furnishingParam
+  );
+  const isFiltered = Boolean(locationId || hasBudget || hasNewFilters);
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +53,11 @@ function PropertyListPage() {
         locationId,
         budgetMin: budgetMinParam,
         budgetMax: budgetMaxParam,
+        bhk: bhkParam,
+        propertyType: propertyTypeParam,
+        minArea: minAreaParam,
+        possession: possessionParam,
+        furnishing: furnishingParam,
       });
       setProperties(data);
     } catch {
@@ -47,11 +66,43 @@ function PropertyListPage() {
     } finally {
       setLoading(false);
     }
-  }, [locationId, budgetMinParam, budgetMaxParam]);
+  }, [
+    locationId,
+    budgetMinParam,
+    budgetMaxParam,
+    bhkParam,
+    propertyTypeParam,
+    minAreaParam,
+    possessionParam,
+    furnishingParam,
+  ]);
 
   useEffect(() => {
     loadProperties();
   }, [loadProperties]);
+
+  // Applies the filter-panel draft to the URL, preserving location/budget.
+  const handleApply = (draft) => {
+    const next = new URLSearchParams(searchParams);
+    for (const key of PROPERTY_FILTER_KEYS) {
+      const value = (draft[key] ?? "").toString().trim();
+      if (value) {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+    }
+    setSearchParams(next);
+  };
+
+  // Clears only the filter-panel parameters; location/budget are preserved.
+  const handleClear = () => {
+    const next = new URLSearchParams(searchParams);
+    for (const key of PROPERTY_FILTER_KEYS) {
+      next.delete(key);
+    }
+    setSearchParams(next);
+  };
 
   // The populated location on any returned property tells us the area name,
   // so we do not need a separate request for it.
@@ -77,7 +128,6 @@ function PropertyListPage() {
           ? `Properties up to ${maxLabel}`
           : "Properties";
 
-  // Compact budget summary, shown under the heading when a location is also set.
   const budgetSummary = !hasBudget
     ? null
     : minLabel && maxLabel
@@ -88,13 +138,41 @@ function PropertyListPage() {
           ? `Up to ${maxLabel}`
           : null;
 
+  // Human-readable descriptors for the new filters (never raw enum values).
+  const descriptors = [
+    bhkParam ? `${bhkParam} BHK` : null,
+    propertyTypeParam ? humanize(propertyTypeParam) : null,
+    possessionParam ? humanize(possessionParam) : null,
+    furnishingParam ? humanize(furnishingParam) : null,
+  ].filter(Boolean);
+
+  const minAreaNumber = toNumber(minAreaParam);
+  const areaSummary = minAreaNumber !== null
+    ? `From ${formatNumber(minAreaNumber)} sq ft`
+    : null;
+  const areaPhrase = areaSummary ? areaSummary.toLowerCase() : null;
+
   const heading = locationId
     ? locationName
       ? `Properties in ${locationName}`
       : "Properties in this location"
     : hasBudget
       ? budgetHeading
-      : "Properties";
+      : descriptors.length > 0
+        ? `${descriptors.join(" ")} Properties`
+        : areaPhrase
+          ? `Properties ${areaPhrase}`
+          : "Properties";
+
+  // Secondary summary line so combined filters stay readable.
+  let filterSummary = null;
+  if (hasNewFilters) {
+    if (locationId || hasBudget) {
+      filterSummary = [...descriptors, areaSummary].filter(Boolean).join(" · ");
+    } else if (descriptors.length > 0 && areaSummary) {
+      filterSummary = areaSummary;
+    }
+  }
 
   const subText = locationId && hasBudget
     ? "Available properties in this area and budget range."
@@ -102,15 +180,19 @@ function PropertyListPage() {
       ? "Available properties in this area."
       : hasBudget
         ? "Available properties in this budget range."
-        : "Browse available properties in the network.";
+        : hasNewFilters
+          ? "Available properties matching your filters."
+          : "Browse available properties in the network.";
 
-  const emptyText = locationId && hasBudget
-    ? "No available properties match these filters."
-    : locationId
-      ? "No available properties in this location yet."
-      : hasBudget
-        ? "No available properties in this budget range."
-        : "No properties available yet.";
+  const emptyText = hasNewFilters
+    ? "No properties match these filters."
+    : locationId && hasBudget
+      ? "No available properties match these filters."
+      : locationId
+        ? "No available properties in this location yet."
+        : hasBudget
+          ? "No available properties in this budget range."
+          : "No properties available yet.";
 
   return (
     <main className="app">
@@ -124,8 +206,21 @@ function PropertyListPage() {
         {locationId && hasBudget && budgetSummary && (
           <p className="budget-summary">{budgetSummary}</p>
         )}
+        {filterSummary && <p className="filter-summary">{filterSummary}</p>}
         <p>{subText}</p>
       </header>
+
+      <PropertyFilters
+        filters={{
+          bhk: bhkParam,
+          propertyType: propertyTypeParam,
+          minArea: minAreaParam,
+          possession: possessionParam,
+          furnishing: furnishingParam,
+        }}
+        onApply={handleApply}
+        onClear={handleClear}
+      />
 
       {loading && <p className="state-message">Loading properties…</p>}
 
