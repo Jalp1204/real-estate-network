@@ -7,13 +7,20 @@
 const PROPERTIES_ENDPOINT = "/api/properties";
 
 // GET /api/properties
-// Returns the array of properties. When `locationId` is provided the request
-// is filtered to that location. Throws a useful Error when the request fails
-// so the caller can render an error state.
-export async function getProperties(locationId) {
-  const url = locationId
-    ? `${PROPERTIES_ENDPOINT}?location=${encodeURIComponent(locationId)}`
-    : PROPERTIES_ENDPOINT;
+// Returns the array of properties. Optional filters:
+//   locationId  -> only that location
+//   budgetMin   -> price.amount >= budgetMin
+//   budgetMax   -> price.amount <= budgetMax
+// Throws a useful Error when the request fails so the caller can render an
+// error state.
+export async function getProperties({ locationId, budgetMin, budgetMax } = {}) {
+  const params = new URLSearchParams();
+  if (locationId) params.set("location", locationId);
+  if (budgetMin != null) params.set("budgetMin", String(budgetMin));
+  if (budgetMax != null) params.set("budgetMax", String(budgetMax));
+
+  const query = params.toString();
+  const url = query ? `${PROPERTIES_ENDPOINT}?${query}` : PROPERTIES_ENDPOINT;
 
   let response;
 

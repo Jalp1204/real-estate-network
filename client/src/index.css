@@ -578,3 +578,62 @@ body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* --- Budget grid / card --- */
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .budget-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+.budget-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.1rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.budget-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 10px rgba(16, 24, 40, 0.1),
+    0 2px 4px rgba(16, 24, 40, 0.06);
+  transform: translateY(-2px);
+}
+
+.budget-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.budget-card__label {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.budget-card__hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+/* Combined location + budget heading summary. */
+.page-header .budget-summary {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-badge-text);
+}
