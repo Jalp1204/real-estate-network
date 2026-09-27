@@ -2,7 +2,52 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { getCustomerById, deleteCustomer } from "../api/customers.js";
 import { getCustomerShortlist } from "../api/customerShortlist.js";
+import { getCustomerRequirements, deleteCustomerRequirements } from "../api/customerRequirements.js";
 import PropertyCard from "../components/PropertyCard.jsx";
+import { humanize, formatRupeesShort, formatNumber } from "../utils/format.js";
+
+// Builds the read-only requirements summary rows (empty values omitted).
+function requirementRows(requirement) {
+  const budget = requirement?.budget ?? {};
+  const minLabel = formatRupeesShort(budget.min);
+  const maxLabel = formatRupeesShort(budget.max);
+
+  let budgetText = null;
+  if (minLabel && maxLabel) budgetText = `₹${minLabel.replace("₹", "")} – ${maxLabel}`;
+  else if (minLabel) budgetText = `From ${minLabel}`;
+  else if (maxLabel) budgetText = `Up to ${maxLabel}`;
+
+  const locations = (requirement?.locations ?? [])
+    .map((loc) => (loc && typeof loc === "object" ? loc.name : null))
+    .filter(Boolean)
+    .join(", ");
+
+  const bhk = (requirement?.bhk ?? []).map((n) => `${n} BHK`).join(", ");
+  const propertyTypes = (requirement?.propertyTypes ?? [])
+    .map((t) => humanize(t))
+    .join(", ");
+  const possession = (requirement?.possession ?? [])
+    .map((p) => humanize(p))
+    .join(", ");
+  const amenities = (requirement?.amenities ?? [])
+    .map((a) => humanize(a))
+    .join(", ");
+  const minArea =
+    requirement?.minArea != null
+      ? `${formatNumber(requirement.minArea)} sq ft`
+      : null;
+
+  return [
+    { label: "Budget", value: budgetText },
+    { label: "Preferred Locations", value: locations || null },
+    { label: "BHK", value: bhk || null },
+    { label: "Property Types", value: propertyTypes || null },
+    { label: "Possession", value: possession || null },
+    { label: "Minimum Area", value: minArea },
+    { label: "Amenities", value: amenities || null },
+    { label: "Notes", value: requirement?.notes ?? null },
+  ].filter((row) => row.value !== null && row.value !== "");
+}
 
 // Customer details screen (private/internal area).
 // V1 shows name + phone and the customer's interested properties (the private
@@ -18,6 +63,16 @@ function CustomerDetailsPage() {
   const [interested, setInterested] = useState([]);
   // shortlistStatus: "loading" | "success" | "error"
   const [shortlistStatus, setShortlistStatus] = useState("loading");
+
+  const [requirement, setRequirement] = useState(null);
+  // requirementStatus: "loading" | "success" | "error"
+  const [requirementStatus, setRequirementStatus] = useState("loading");
+
+  // Requirements delete flow (inline confirmation, like the customer delete).
+  const [confirmingRequirementDelete, setConfirmingRequirementDelete] =
+    useState(false);
+  const [deletingRequirement, setDeletingRequirement] = useState(false);
+  const [requirementDeleteError, setRequirementDeleteError] = useState(null);
 
   // Delete flow: requires an explicit confirmation step (never a single tap).
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -36,6 +91,18 @@ function CustomerDetailsPage() {
     }
   }, [id]);
 
+  const loadRequirements = useCallback(async () => {
+    setRequirementStatus("loading");
+    try {
+      const data = await getCustomerRequirements(id);
+      setRequirement(data);
+      setRequirementStatus("success");
+    } catch {
+      setRequirement(null);
+      setRequirementStatus("error");
+    }
+  }, [id]);
+
   const loadCustomer = useCallback(async () => {
     setStatus("loading");
 
@@ -50,7 +117,8 @@ function CustomerDetailsPage() {
     }
 
     await loadShortlist();
-  }, [id, loadShortlist]);
+    await loadRequirements();
+  }, [id, loadShortlist, loadRequirements]);
 
   useEffect(() => {
     loadCustomer();
@@ -67,6 +135,24 @@ function CustomerDetailsPage() {
       setDeleteError(error.message || "Unable to delete customer.");
       setDeleting(false);
       setConfirmingDelete(false);
+    }
+  };
+
+  const handleDeleteRequirements = async () => {
+    setDeletingRequirement(true);
+    setRequirementDeleteError(null);
+
+    try {
+      await deleteCustomerRequirements(id);
+      // Update UI immediately from the successful response (no refresh needed).
+      setRequirement(null);
+      setConfirmingRequirementDelete(false);
+    } catch (error) {
+      setRequirementDeleteError(
+        error.message || "Unable to delete requirements."
+      );
+    } finally {
+      setDeletingRequirement(false);
     }
   };
 
@@ -159,6 +245,104 @@ function CustomerDetailsPage() {
                     }
                   />
                 ))}
+              </div>
+            )}
+          </section>
+
+          <section className="details__section">
+            <div className="page-header__row">
+              <h2>Requirements</h2>
+              {requirementStatus === "success" && !confirmingRequirementDelete && (
+                <div className="section-actions">
+                  <Link
+                    className="button-link"
+                    to={`/customers/${id}/requirements`}
+                  >
+                    {requirement ? "Edit Requirements" : "+ Add Requirements"}
+                  </Link>
+                  {requirement && (
+                    <button
+                      type="button"
+                      className="button-danger"
+                      onClick={() => {
+                        setRequirementDeleteError(null);
+                        setConfirmingRequirementDelete(true);
+                      }}
+                    >
+                      Delete Requirements
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {requirementStatus === "loading" && (
+              <p className="details__muted">Loading requirements…</p>
+            )}
+
+            {requirementStatus === "error" && (
+              <div className="state-message state-message--error" role="alert">
+                <p>Unable to load requirements.</p>
+                <button
+                  type="button"
+                  className="retry-button"
+                  onClick={loadRequirements}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {requirementStatus === "success" && !requirement && (
+              <p className="details__muted">No requirements recorded yet.</p>
+            )}
+
+            {requirementStatus === "success" && requirement && (
+              <dl className="facts">
+                {requirementRows(requirement).map((row) => (
+                  <div className="facts__item" key={row.label}>
+                    <dt className="facts__label">{row.label}</dt>
+                    <dd className="facts__value">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
+            {requirementStatus === "success" && requirement && confirmingRequirementDelete && (
+              <div
+                className="delete-confirm"
+                role="group"
+                aria-label="Confirm delete requirements"
+              >
+                <p className="delete-confirm__question">
+                  Are you sure you want to delete these requirements?
+                </p>
+                <div className="filters__actions">
+                  <button
+                    type="button"
+                    className="button-danger"
+                    onClick={handleDeleteRequirements}
+                    disabled={deletingRequirement}
+                  >
+                    {deletingRequirement ? "Deleting…" : "Delete"}
+                  </button>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    onClick={() => {
+                      setConfirmingRequirementDelete(false);
+                      setRequirementDeleteError(null);
+                    }}
+                    disabled={deletingRequirement}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {requirementDeleteError && (
+                  <p className="state-message state-message--error" role="alert">
+                    {requirementDeleteError}
+                  </p>
+                )}
               </div>
             )}
           </section>

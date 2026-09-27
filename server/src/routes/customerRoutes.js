@@ -10,6 +10,12 @@ import {
   addCustomerShortlistProperties,
   removeCustomerShortlistProperty,
 } from "../controllers/customerShortlistController.js";
+import {
+  getCustomerRequirements,
+  createCustomerRequirements,
+  updateCustomerRequirements,
+  deleteCustomerRequirements,
+} from "../controllers/customerRequirementController.js";
 
 const router = express.Router();
 
@@ -30,6 +36,18 @@ router.delete(
   "/:customerId/shortlist/:propertyId",
   removeCustomerShortlistProperty
 );
+
+// GET /api/customers/:customerId/requirements
+router.get("/:customerId/requirements", getCustomerRequirements);
+
+// POST /api/customers/:customerId/requirements
+router.post("/:customerId/requirements", createCustomerRequirements);
+
+// PUT /api/customers/:customerId/requirements
+router.put("/:customerId/requirements", updateCustomerRequirements);
+
+// DELETE /api/customers/:customerId/requirements
+router.delete("/:customerId/requirements", deleteCustomerRequirements);
 
 // GET /api/customers/:id
 router.get("/:id", getCustomerById);

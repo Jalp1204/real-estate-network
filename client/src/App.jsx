@@ -13,6 +13,7 @@ import CustomerListPage from "./pages/CustomerListPage.jsx";
 import AddCustomerPage from "./pages/AddCustomerPage.jsx";
 import CustomerDetailsPage from "./pages/CustomerDetailsPage.jsx";
 import CustomerInterestedPropertiesPage from "./pages/CustomerInterestedPropertiesPage.jsx";
+import CustomerRequirementsPage from "./pages/CustomerRequirementsPage.jsx";
 
 // Root component of the application.
 // Defines the routes; the browser router itself is set up in main.jsx.
@@ -36,6 +37,10 @@ function App() {
         <Route
           path="/customers/:customerId/properties"
           element={<CustomerInterestedPropertiesPage />}
+        />
+        <Route
+          path="/customers/:customerId/requirements"
+          element={<CustomerRequirementsPage />}
         />
         <Route path="/customers/:id" element={<CustomerDetailsPage />} />
       </Routes>

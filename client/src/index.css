@@ -1456,3 +1456,62 @@ a.button-secondary {
   background-color: var(--color-badge-bg);
   border-radius: 999px;
 }
+
+/* --- Customer requirements form --- */
+
+.requirements-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.checkbox-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checkbox-group .filters__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  padding: 0;
+}
+
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.checkbox-grid__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.checkbox-grid__item input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+textarea.filters__control {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+/* Inline action group in a details section header (Edit / Delete Requirements). */
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-actions .button-link {
+  margin-top: 0;
+}

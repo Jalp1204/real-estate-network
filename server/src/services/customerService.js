@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Customer from "../models/Customer.js";
 import Shortlist from "../models/Shortlist.js";
+import CustomerRequirement from "../models/CustomerRequirement.js";
 
 // Customer V1 manages only name + phone. `interestLevel` is nullable in the
 // locked schema and is not set by V1 (it defaults to null).
@@ -111,6 +112,9 @@ export async function deleteCustomer(id) {
   // Clean up the customer's interested-properties shortlist (if any). This is a
   // no-op for customers that never had one.
   await Shortlist.deleteMany({ customerId: customer._id });
+
+  // Clean up the customer's requirements document (if any).
+  await CustomerRequirement.deleteMany({ customerId: customer._id });
 
   return customer;
 }

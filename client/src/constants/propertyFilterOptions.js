@@ -32,6 +32,21 @@ export const FURNISHING_OPTIONS = [
   { value: "fully_furnished", label: "Fully Furnished" },
 ];
 
+// Amenity options (mirrors AMENITIES in the backend shared constants).
+export const AMENITY_OPTIONS = [
+  { value: "lift", label: "Lift" },
+  { value: "parking", label: "Parking" },
+  { value: "gym", label: "Gym" },
+  { value: "security", label: "Security" },
+  { value: "garden", label: "Garden" },
+  { value: "clubhouse", label: "Clubhouse" },
+  { value: "play_area", label: "Play Area" },
+  { value: "power_backup", label: "Power Backup" },
+  { value: "water_supply", label: "Water Supply" },
+  { value: "fire_safety", label: "Fire Safety" },
+  { value: "solar", label: "Solar" },
+];
+
 // The query parameters owned by this filter panel. "Clear Filters" removes
 // only these, leaving location/budget parameters untouched.
 export const PROPERTY_FILTER_KEYS = [
