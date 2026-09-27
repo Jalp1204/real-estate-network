@@ -1,10 +1,17 @@
 import mongoose from "mongoose";
 import Property from "../models/Property.js";
+import Location from "../models/Location.js";
+import Broker from "../models/Broker.js";
 import {
   BHK,
   PROPERTY_TYPES,
+  PRICE_TYPES,
+  AREA_UNITS,
   POSSESSION_STATUSES,
   FURNISHINGS,
+  FACINGS,
+  AVAILABILITIES,
+  SOURCE_TYPES,
   PROPERTY_SORTS,
 } from "../constants/propertyOptions.js";
 
@@ -259,4 +266,214 @@ export async function getPropertyById(id) {
   }
 
   return property;
+}
+
+// Public/customer-facing property shape.
+//
+// Strips the internal `source` relationship (sourceType + brokerId) so no
+// broker/source metadata ever reaches customer-facing responses. This is a
+// response-boundary sanitizer only: the database value is never modified.
+// Uses toJSON() so the serialized shape (and absence of `__v`) matches the
+// previous behavior exactly.
+export function toPublicProperty(property) {
+  const obj =
+    typeof property.toJSON === "function" ? property.toJSON() : { ...property };
+  delete obj.source;
+  return obj;
+}
+
+// ---------------------------------------------------------------------------
+// Minimal write foundation (Broker Slice 2). Only what is required to create /
+// edit a property's source relationship. Not a general property-management API.
+// ---------------------------------------------------------------------------
+
+function requireText(value, label) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  if (!trimmed) throw new PropertyServiceError(`${label} is required`, 400);
+  return trimmed;
+}
+
+function requireEnum(value, allowed, label) {
+  if (typeof value !== "string" || !allowed.includes(value)) {
+    throw new PropertyServiceError(`Invalid ${label}`, 400);
+  }
+  return value;
+}
+
+function requireNonNegative(value, label) {
+  if (value === undefined || value === null || value === "") {
+    throw new PropertyServiceError(`${label} is required`, 400);
+  }
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) {
+    throw new PropertyServiceError(`Invalid ${label}`, 400);
+  }
+  return number;
+}
+
+// Validates/normalizes the editable property fields shared by create and update.
+// Advanced/optional fields are intentionally left at schema defaults.
+async function buildPropertyFields(data = {}) {
+  const source = data && typeof data === "object" ? data : {};
+
+  const locationId = source.locationId;
+  if (
+    typeof locationId !== "string" ||
+    !mongoose.Types.ObjectId.isValid(locationId)
+  ) {
+    throw new PropertyServiceError("A valid location is required", 400);
+  }
+  const locationExists = await Location.exists({ _id: locationId });
+  if (!locationExists) {
+    throw new PropertyServiceError("Location not found", 404);
+  }
+
+  let bhk = null;
+  if (source.bhk !== undefined && source.bhk !== null && source.bhk !== "") {
+    bhk = Number(source.bhk);
+    if (!Number.isInteger(bhk) || !BHK.includes(bhk)) {
+      throw new PropertyServiceError("Invalid BHK", 400);
+    }
+  }
+
+  return {
+    title: requireText(source.title, "Title"),
+    propertyType: requireEnum(source.propertyType, PROPERTY_TYPES, "property type"),
+    bhk,
+    price: {
+      amount: requireNonNegative(source.price?.amount, "Price amount"),
+      type: requireEnum(source.price?.type, PRICE_TYPES, "price type"),
+    },
+    area: requireNonNegative(source.area, "Area"),
+    areaUnit: requireEnum(source.areaUnit, AREA_UNITS, "area unit"),
+    locationId,
+    possession: {
+      status: requireEnum(
+        source.possession?.status,
+        POSSESSION_STATUSES,
+        "possession status"
+      ),
+      date: null,
+      dateType: "not_applicable",
+    },
+    details: {
+      floor: null,
+      totalFloors: null,
+      parking: null,
+      furnishing: requireEnum(
+        source.details?.furnishing,
+        FURNISHINGS,
+        "furnishing"
+      ),
+      facing: requireEnum(source.details?.facing, FACINGS, "facing"),
+      propertyAge: null,
+    },
+    availability: requireEnum(source.availability, AVAILABILITIES, "availability"),
+  };
+}
+
+// Validates/normalizes the property source relationship.
+// sourceType=broker requires an existing broker; every other source type stores
+// brokerId as null (explicitly clearing any previous broker reference).
+async function buildSource(raw = {}) {
+  const source = raw && typeof raw === "object" ? raw : {};
+  const sourceType = requireEnum(source.sourceType, SOURCE_TYPES, "source type");
+
+  if (sourceType === "broker") {
+    const brokerId = source.brokerId;
+    if (
+      typeof brokerId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(brokerId)
+    ) {
+      throw new PropertyServiceError("A broker must be selected", 400);
+    }
+    const exists = await Broker.exists({ _id: brokerId });
+    if (!exists) {
+      throw new PropertyServiceError("Broker not found", 404);
+    }
+    return { sourceType, brokerId };
+  }
+
+  return { sourceType, brokerId: null };
+}
+
+// POST /api/properties
+export async function createProperty(data = {}) {
+  const fields = await buildPropertyFields(data);
+  const source = await buildSource(data.source);
+
+  return Property.create({
+    ...fields,
+    amenities: [],
+    specialities: [],
+    photos: [],
+    verification: {
+      status: "not_checked",
+      lastCheckedAt: null,
+      ownershipInfo: "not_checked",
+      registrationInfo: "not_checked",
+      approvalInfo: "not_checked",
+      loanInfo: "not_checked",
+      notes: null,
+    },
+    source,
+    internalNotes: [],
+  });
+}
+
+// PUT /api/properties/:id
+export async function updateProperty(id, data = {}) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new PropertyServiceError("Invalid property ID", 400);
+  }
+
+  const property = await Property.findById(id);
+  if (!property) {
+    throw new PropertyServiceError("Property not found", 404);
+  }
+
+  const fields = await buildPropertyFields(data);
+  const source = await buildSource(data.source);
+
+  // Assign only the fields this minimal form manages. Advanced/nested fields
+  // that the form does not edit (possession.date/dateType, details.floor,
+  // totalFloors, parking, propertyAge, amenities, photos, verification,
+  // internalNotes) are preserved rather than reset.
+  property.title = fields.title;
+  property.propertyType = fields.propertyType;
+  property.bhk = fields.bhk;
+  property.price = fields.price;
+  property.area = fields.area;
+  property.areaUnit = fields.areaUnit;
+  property.locationId = fields.locationId;
+  property.possession.status = fields.possession.status;
+  property.details.furnishing = fields.details.furnishing;
+  property.details.facing = fields.details.facing;
+  property.availability = fields.availability;
+
+  // Replace the source entirely so switching away from broker explicitly writes
+  // brokerId: null.
+  property.source = source;
+
+  await property.save();
+
+  return property;
+}
+
+// GET /api/properties/:id/internal
+// Internal-only detail: the property plus a resolved broker summary (or null
+// when the referenced broker no longer exists). The stored broker ObjectId is
+// preserved as-is; nothing is rewritten.
+export async function getPropertyInternalById(id) {
+  const property = await getPropertyById(id);
+  const obj = property.toObject();
+
+  let broker = null;
+  if (obj.source?.sourceType === "broker" && obj.source?.brokerId) {
+    broker = await Broker.findById(obj.source.brokerId)
+      .select("name businessName phone status")
+      .lean();
+  }
+
+  return { ...obj, broker };
 }

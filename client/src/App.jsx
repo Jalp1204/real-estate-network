@@ -18,6 +18,10 @@ import BrokerListPage from "./pages/BrokerListPage.jsx";
 import AddBrokerPage from "./pages/AddBrokerPage.jsx";
 import BrokerDetailsPage from "./pages/BrokerDetailsPage.jsx";
 import EditBrokerPage from "./pages/EditBrokerPage.jsx";
+import InventoryPropertyListPage from "./pages/InventoryPropertyListPage.jsx";
+import AddPropertyPage from "./pages/AddPropertyPage.jsx";
+import EditPropertyPage from "./pages/EditPropertyPage.jsx";
+import InternalPropertyDetailsPage from "./pages/InternalPropertyDetailsPage.jsx";
 
 // Root component of the application.
 // Defines the routes; the browser router itself is set up in main.jsx.
@@ -53,6 +57,21 @@ function App() {
         <Route path="/brokers/new" element={<AddBrokerPage />} />
         <Route path="/brokers/:id/edit" element={<EditBrokerPage />} />
         <Route path="/brokers/:id" element={<BrokerDetailsPage />} />
+
+        {/* Private/internal property inventory (broker-source workflow) */}
+        <Route
+          path="/inventory/properties"
+          element={<InventoryPropertyListPage />}
+        />
+        <Route path="/inventory/properties/new" element={<AddPropertyPage />} />
+        <Route
+          path="/inventory/properties/:id/edit"
+          element={<EditPropertyPage />}
+        />
+        <Route
+          path="/inventory/properties/:id"
+          element={<InternalPropertyDetailsPage />}
+        />
       </Routes>
     </>
   );

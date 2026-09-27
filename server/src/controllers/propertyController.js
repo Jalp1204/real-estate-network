@@ -11,7 +11,7 @@ export async function getProperties(req, res) {
     return res.status(200).json({
       success: true,
       count: properties.length,
-      data: properties,
+      data: properties.map(propertyService.toPublicProperty),
     });
   } catch (error) {
     if (error instanceof propertyService.PropertyServiceError) {
@@ -38,6 +38,32 @@ export async function getPropertyById(req, res) {
 
     return res.status(200).json({
       success: true,
+      data: propertyService.toPublicProperty(property),
+    });
+  } catch (error) {
+    if (error instanceof propertyService.PropertyServiceError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error("Failed to fetch property:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch property",
+    });
+  }
+}
+
+// GET /api/properties/:id/internal
+// Internal-only detail (includes the resolved broker source summary).
+export async function getPropertyInternalById(req, res) {
+  try {
+    const property = await propertyService.getPropertyInternalById(req.params.id);
+
+    return res.status(200).json({
+      success: true,
       data: property,
     });
   } catch (error) {
@@ -52,6 +78,56 @@ export async function getPropertyById(req, res) {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch property",
+    });
+  }
+}
+
+// POST /api/properties
+export async function createProperty(req, res) {
+  try {
+    const property = await propertyService.createProperty(req.body);
+
+    return res.status(201).json({
+      success: true,
+      data: property,
+    });
+  } catch (error) {
+    if (error instanceof propertyService.PropertyServiceError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error("Failed to create property:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create property",
+    });
+  }
+}
+
+// PUT /api/properties/:id
+export async function updateProperty(req, res) {
+  try {
+    const property = await propertyService.updateProperty(req.params.id, req.body);
+
+    return res.status(200).json({
+      success: true,
+      data: property,
+    });
+  } catch (error) {
+    if (error instanceof propertyService.PropertyServiceError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error("Failed to update property:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update property",
     });
   }
 }
