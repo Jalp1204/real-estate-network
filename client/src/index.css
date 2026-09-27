@@ -1515,3 +1515,21 @@ textarea.filters__control {
 .section-actions .button-link {
   margin-top: 0;
 }
+
+/* --- Broker directory --- */
+
+/* Secondary text line on broker list cards. */
+.broker-card__meta {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+/* The nav now holds several private links; allow it to wrap so it never
+   overflows on narrow screens (e.g. 390px). */
+.app-nav__inner {
+  flex-wrap: wrap;
+}
+
+.app-nav__links {
+  flex-wrap: wrap;
+}

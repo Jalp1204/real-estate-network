@@ -14,6 +14,10 @@ import AddCustomerPage from "./pages/AddCustomerPage.jsx";
 import CustomerDetailsPage from "./pages/CustomerDetailsPage.jsx";
 import CustomerInterestedPropertiesPage from "./pages/CustomerInterestedPropertiesPage.jsx";
 import CustomerRequirementsPage from "./pages/CustomerRequirementsPage.jsx";
+import BrokerListPage from "./pages/BrokerListPage.jsx";
+import AddBrokerPage from "./pages/AddBrokerPage.jsx";
+import BrokerDetailsPage from "./pages/BrokerDetailsPage.jsx";
+import EditBrokerPage from "./pages/EditBrokerPage.jsx";
 
 // Root component of the application.
 // Defines the routes; the browser router itself is set up in main.jsx.
@@ -43,6 +47,12 @@ function App() {
           element={<CustomerRequirementsPage />}
         />
         <Route path="/customers/:id" element={<CustomerDetailsPage />} />
+
+        {/* Private/internal broker directory */}
+        <Route path="/brokers" element={<BrokerListPage />} />
+        <Route path="/brokers/new" element={<AddBrokerPage />} />
+        <Route path="/brokers/:id/edit" element={<EditBrokerPage />} />
+        <Route path="/brokers/:id" element={<BrokerDetailsPage />} />
       </Routes>
     </>
   );

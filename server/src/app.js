@@ -2,6 +2,7 @@ import express from "express";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
+import brokerRoutes from "./routes/brokerRoutes.js";
 
 // The Express "app" is created here and kept separate from server.js.
 // This separation keeps the app easy to test and easy to extend later.
@@ -28,5 +29,8 @@ app.use("/api/locations", locationRoutes);
 
 // Customer endpoints (private/internal area).
 app.use("/api/customers", customerRoutes);
+
+// Broker endpoints (private/internal area).
+app.use("/api/brokers", brokerRoutes);
 
 export default app;
