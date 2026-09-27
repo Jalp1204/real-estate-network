@@ -12,6 +12,7 @@ import ComparePage from "./pages/ComparePage.jsx";
 import CustomerListPage from "./pages/CustomerListPage.jsx";
 import AddCustomerPage from "./pages/AddCustomerPage.jsx";
 import CustomerDetailsPage from "./pages/CustomerDetailsPage.jsx";
+import CustomerInterestedPropertiesPage from "./pages/CustomerInterestedPropertiesPage.jsx";
 
 // Root component of the application.
 // Defines the routes; the browser router itself is set up in main.jsx.
@@ -32,6 +33,10 @@ function App() {
         {/* Private/internal customer area */}
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/customers/new" element={<AddCustomerPage />} />
+        <Route
+          path="/customers/:customerId/properties"
+          element={<CustomerInterestedPropertiesPage />}
+        />
         <Route path="/customers/:id" element={<CustomerDetailsPage />} />
       </Routes>
     </>

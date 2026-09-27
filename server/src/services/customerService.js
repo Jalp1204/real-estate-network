@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Customer from "../models/Customer.js";
+import Shortlist from "../models/Shortlist.js";
 
 // Customer V1 manages only name + phone. `interestLevel` is nullable in the
 // locked schema and is not set by V1 (it defaults to null).
@@ -93,8 +94,8 @@ export async function createCustomer({ name, phone } = {}) {
 // DELETE /api/customers/:id
 // Throws CustomerServiceError (400 invalid id, 404 not found).
 //
-// Note for Slice 2: once a customer -> shortlists relationship exists, any
-// linked records should be cleaned up here alongside the customer.
+// Also removes any associated shortlist document(s) so deleting a customer
+// never leaves orphaned customer->property relationship data behind.
 export async function deleteCustomer(id) {
   // Validate the id format first so an invalid id is a 400, not a 500.
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -106,6 +107,10 @@ export async function deleteCustomer(id) {
   if (!customer) {
     throw new CustomerServiceError("Customer not found", 404);
   }
+
+  // Clean up the customer's interested-properties shortlist (if any). This is a
+  // no-op for customers that never had one.
+  await Shortlist.deleteMany({ customerId: customer._id });
 
   return customer;
 }

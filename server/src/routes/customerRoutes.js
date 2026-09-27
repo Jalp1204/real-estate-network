@@ -5,6 +5,11 @@ import {
   createCustomer,
   deleteCustomer,
 } from "../controllers/customerController.js";
+import {
+  getCustomerShortlist,
+  addCustomerShortlistProperties,
+  removeCustomerShortlistProperty,
+} from "../controllers/customerShortlistController.js";
 
 const router = express.Router();
 
@@ -13,6 +18,18 @@ router.get("/", getCustomers);
 
 // POST /api/customers
 router.post("/", createCustomer);
+
+// GET /api/customers/:customerId/shortlist  (interested properties)
+router.get("/:customerId/shortlist", getCustomerShortlist);
+
+// POST /api/customers/:customerId/shortlist
+router.post("/:customerId/shortlist", addCustomerShortlistProperties);
+
+// DELETE /api/customers/:customerId/shortlist/:propertyId
+router.delete(
+  "/:customerId/shortlist/:propertyId",
+  removeCustomerShortlistProperty
+);
 
 // GET /api/customers/:id
 router.get("/:id", getCustomerById);

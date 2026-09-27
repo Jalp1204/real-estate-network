@@ -1305,3 +1305,154 @@ a.button-secondary {
   margin: 0.75rem 0 0;
   font-weight: 600;
 }
+
+/* --- Interested property selection list (customer area) --- */
+
+.select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.select-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: default;
+}
+
+.select-row--selected {
+  border-color: #c7d2fe;
+  background-color: var(--color-badge-bg);
+}
+
+.select-row--existing {
+  opacity: 0.92;
+}
+
+/* The checkbox + photo + text form the clickable "select" area. Kept as its
+   own label so the explicit Remove button is never inside it. */
+.select-row__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.select-row--existing .select-row__toggle {
+  cursor: default;
+}
+
+.select-row__input {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+/* Single identifying photo for each selectable property. Fixed small size so
+   it never causes horizontal overflow on mobile. */
+.select-row__photo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.select-row__photo-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.select-row__photo-empty {
+  padding: 0 0.25rem;
+  font-size: 0.62rem;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.select-row__input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.select-row__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.select-row__title {
+  font-weight: 600;
+}
+
+.select-row__meta {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+/* Explicit remove action for already-interested properties. */
+.select-row__remove {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background-color: var(--color-surface);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.select-row__remove:hover {
+  background-color: #fef2f2;
+  border-color: #b91c1c;
+}
+
+.select-row__remove:focus-visible {
+  outline: 2px solid #b91c1c;
+  outline-offset: 2px;
+}
+
+/* Confirmation block spans the full row width (wraps under the content). */
+.select-row__confirm {
+  flex-basis: 100%;
+  margin-top: 0.25rem;
+}
+
+.select-row__confirm-question {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.select-row__badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-badge-text);
+  background-color: var(--color-badge-bg);
+  border-radius: 999px;
+}
