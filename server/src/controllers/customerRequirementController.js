@@ -114,3 +114,32 @@ export async function deleteCustomerRequirements(req, res) {
     });
   }
 }
+
+// GET /api/customers/:customerId/matching-properties
+// Deterministic requirement-based property search for the private customer
+// area. Returns { filterCount, properties }.
+export async function getMatchingProperties(req, res) {
+  try {
+    const result = await customerRequirementService.findMatchingProperties(
+      req.params.customerId
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof CustomerServiceError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error("Failed to find matching properties:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to find matching properties",
+    });
+  }
+}

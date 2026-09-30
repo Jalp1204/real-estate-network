@@ -22,16 +22,10 @@ function AppNav() {
           <span className="app-nav__divider" aria-hidden="true" />
 
           <Link className="app-nav__link app-nav__link--private" to="/customers">
-            <span className="app-nav__icon" aria-hidden="true">
-              🔒
-            </span>
             <span>Customers</span>
           </Link>
 
           <Link className="app-nav__link app-nav__link--private" to="/brokers">
-            <span className="app-nav__icon" aria-hidden="true">
-              🔒
-            </span>
             <span>Brokers</span>
           </Link>
 
@@ -39,9 +33,6 @@ function AppNav() {
             className="app-nav__link app-nav__link--private"
             to="/inventory/properties"
           >
-            <span className="app-nav__icon" aria-hidden="true">
-              🔒
-            </span>
             <span>Inventory</span>
           </Link>
         </div>

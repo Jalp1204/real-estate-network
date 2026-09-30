@@ -80,6 +80,34 @@ export async function createCustomer(req, res) {
   }
 }
 
+// PUT /api/customers/:id
+export async function updateCustomer(req, res) {
+  try {
+    const customer = await customerService.updateCustomer(
+      req.params.id,
+      req.body
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    if (error instanceof customerService.CustomerServiceError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error("Failed to update customer:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update customer",
+    });
+  }
+}
+
 // DELETE /api/customers/:id
 export async function deleteCustomer(req, res) {
   try {

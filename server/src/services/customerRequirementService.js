@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 import Customer from "../models/Customer.js";
 import CustomerRequirement from "../models/CustomerRequirement.js";
 import Location from "../models/Location.js";
+import Property from "../models/Property.js";
+import { buildRequirementFilter } from "./propertyService.js";
+import {
+  PROPERTY_FIELDS as CUSTOMER_PROPERTY_FIELDS,
+  toPublicProperty as toCustomerSafeProperty,
+} from "./customerShortlistService.js";
 import {
   BHK,
   PROPERTY_TYPES,
@@ -223,4 +229,41 @@ export async function deleteCustomerRequirements(customerId) {
   await CustomerRequirement.deleteMany({ customerId });
 
   return null;
+}
+
+// GET /api/customers/:customerId/matching-properties
+// Deterministic V1 filter that maps the customer's requirements onto the
+// EXISTING property inventory. Requirements only ever restrict the result set:
+// an empty field imposes no restriction, and empty requirements do NOT mean
+// "no properties".
+//
+// Returns { filterCount, properties }:
+//   - filterCount 0 (no requirements, or no active filters) -> properties []
+//   - otherwise the matching properties in the shared customer-safe shape
+//     (no broker/source/internal notes).
+export async function findMatchingProperties(customerId) {
+  await assertCustomerExists(customerId);
+
+  // lean() so the filter builder receives plain values rather than a document.
+  const requirement = await CustomerRequirement.findOne({ customerId }).lean();
+
+  if (!requirement) {
+    return { filterCount: 0, properties: [] };
+  }
+
+  const { filter, filterCount } = buildRequirementFilter(requirement);
+
+  if (filterCount === 0) {
+    return { filterCount: 0, properties: [] };
+  }
+
+  const properties = await Property.find(filter)
+    .select(CUSTOMER_PROPERTY_FIELDS)
+    .populate("locationId")
+    .sort({ updatedAt: -1 });
+
+  return {
+    filterCount,
+    properties: properties.map(toCustomerSafeProperty),
+  };
 }

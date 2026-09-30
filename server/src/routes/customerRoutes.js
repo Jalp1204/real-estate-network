@@ -3,6 +3,7 @@ import {
   getCustomers,
   getCustomerById,
   createCustomer,
+  updateCustomer,
   deleteCustomer,
 } from "../controllers/customerController.js";
 import {
@@ -15,6 +16,7 @@ import {
   createCustomerRequirements,
   updateCustomerRequirements,
   deleteCustomerRequirements,
+  getMatchingProperties,
 } from "../controllers/customerRequirementController.js";
 
 const router = express.Router();
@@ -49,8 +51,14 @@ router.put("/:customerId/requirements", updateCustomerRequirements);
 // DELETE /api/customers/:customerId/requirements
 router.delete("/:customerId/requirements", deleteCustomerRequirements);
 
+// GET /api/customers/:customerId/matching-properties
+router.get("/:customerId/matching-properties", getMatchingProperties);
+
 // GET /api/customers/:id
 router.get("/:id", getCustomerById);
+
+// PUT /api/customers/:id
+router.put("/:id", updateCustomer);
 
 // DELETE /api/customers/:id
 router.delete("/:id", deleteCustomer);

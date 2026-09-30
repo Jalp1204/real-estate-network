@@ -72,3 +72,47 @@ export async function updateCustomerRequirements(customerId, data) {
 export async function deleteCustomerRequirements(customerId) {
   return request(customerId, { method: "DELETE", allowNull: true });
 }
+
+// GET /api/customers/:customerId/matching-properties
+// Deterministic requirement-based property search (private/internal area).
+// Returns { filterCount, properties }. filterCount 0 means the customer has no
+// active requirement filters (the caller should prompt for requirements).
+export async function getMatchingProperties(customerId) {
+  let response;
+
+  try {
+    response = await fetch(
+      `${CUSTOMERS_ENDPOINT}/${customerId}/matching-properties`
+    );
+  } catch {
+    throw new Error("Unable to reach the server.");
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      payload && typeof payload.message === "string"
+        ? payload.message
+        : `Request failed with status ${response.status}.`;
+    const error = new Error(message);
+    error.code = response.status === 404 ? "NOT_FOUND" : "ERROR";
+    throw error;
+  }
+
+  if (
+    !payload ||
+    payload.success !== true ||
+    !payload.data ||
+    !Array.isArray(payload.data.properties)
+  ) {
+    throw new Error("Unexpected response from the server.");
+  }
+
+  return payload.data;
+}

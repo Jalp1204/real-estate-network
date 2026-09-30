@@ -113,6 +113,46 @@ export async function createCustomer({ name, phone } = {}) {
   return payload.data;
 }
 
+// PUT /api/customers/:id
+// Updates name + phone. Returns the updated customer. Surfaces the server's
+// validation message on failure (e.g. invalid phone).
+export async function updateCustomer(id, { name, phone } = {}) {
+  let response;
+
+  try {
+    response = await fetch(`${CUSTOMERS_ENDPOINT}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone }),
+    });
+  } catch {
+    throw new Error("Unable to reach the server.");
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      payload && typeof payload.message === "string"
+        ? payload.message
+        : `Request failed with status ${response.status}.`;
+    const error = new Error(message);
+    error.code = response.status === 404 ? "NOT_FOUND" : "VALIDATION";
+    throw error;
+  }
+
+  if (!payload || payload.success !== true || !payload.data) {
+    throw new Error("Unexpected response from the server.");
+  }
+
+  return payload.data;
+}
+
 // DELETE /api/customers/:id
 // Surfaces the server's message on failure (e.g. not found).
 export async function deleteCustomer(id) {

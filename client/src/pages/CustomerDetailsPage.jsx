@@ -186,7 +186,12 @@ function CustomerDetailsPage() {
           </header>
 
           <section className="details__section">
-            <h2>Contact</h2>
+            <div className="page-header__row">
+              <h2>Contact</h2>
+              <Link className="button-link" to={`/customers/${id}/edit`}>
+                Edit
+              </Link>
+            </div>
             <dl className="facts">
               <div className="facts__item">
                 <dt className="facts__label">Name</dt>
@@ -260,6 +265,14 @@ function CustomerDetailsPage() {
                   >
                     {requirement ? "Edit Requirements" : "+ Add Requirements"}
                   </Link>
+                  {requirement && (
+                    <Link
+                      className="button-link"
+                      to={`/customers/${id}/matching-properties`}
+                    >
+                      Find Matching Properties
+                    </Link>
+                  )}
                   {requirement && (
                     <button
                       type="button"

@@ -13,13 +13,16 @@ import { CustomerServiceError } from "./customerService.js";
 // Customer-safe property fields exposed to the customer area. Internal data
 // (broker/source, internalNotes, verification notes) is deliberately excluded.
 // `photos` is trimmed to the single primary photo below.
-const PROPERTY_FIELDS =
+//
+// Exported so other private customer features (e.g. requirement-based matching)
+// reuse exactly the same customer-safe shape instead of duplicating it.
+export const PROPERTY_FIELDS =
   "title price area areaUnit bhk propertyType availability possession details locationId photos";
 
 // Returns a property shaped for the customer area: the photo array is reduced
 // to only the primary photo ({ url, isPrimary }), or an empty array when there
 // is no primary photo. All other fields are passed through unchanged.
-function toPublicProperty(property) {
+export function toPublicProperty(property) {
   const doc =
     typeof property.toObject === "function" ? property.toObject() : property;
   const primary = (doc.photos ?? []).find(

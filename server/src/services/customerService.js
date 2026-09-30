@@ -92,6 +92,51 @@ export async function createCustomer({ name, phone } = {}) {
   };
 }
 
+// PUT /api/customers/:id
+// Updates only the V1 customer fields (name + phone). Both are required; phone
+// must be exactly 10 digits and start with 6, 7, 8 or 9. The customer id is
+// preserved and requirements / interested properties / createdAt are untouched
+// (only updatedAt advances via the model timestamps).
+export async function updateCustomer(id, { name, phone } = {}) {
+  // Validate the id format first so an invalid id is a 400, not a 500.
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new CustomerServiceError("Invalid customer ID", 400);
+  }
+
+  const trimmedName = typeof name === "string" ? name.trim() : "";
+  const trimmedPhone = typeof phone === "string" ? phone.trim() : "";
+
+  if (!trimmedName || !trimmedPhone) {
+    throw new CustomerServiceError("Name and phone are required", 400);
+  }
+
+  if (!PHONE_PATTERN.test(trimmedPhone)) {
+    throw new CustomerServiceError(
+      "Phone must be exactly 10 digits and start with 6, 7, 8, or 9",
+      400
+    );
+  }
+
+  const customer = await Customer.findById(id);
+
+  if (!customer) {
+    throw new CustomerServiceError("Customer not found", 404);
+  }
+
+  customer.name = trimmedName;
+  customer.phone = trimmedPhone;
+  await customer.save();
+
+  // Return only the V1 fields.
+  return {
+    _id: customer._id,
+    name: customer.name,
+    phone: customer.phone,
+    createdAt: customer.createdAt,
+    updatedAt: customer.updatedAt,
+  };
+}
+
 // DELETE /api/customers/:id
 // Throws CustomerServiceError (400 invalid id, 404 not found).
 //

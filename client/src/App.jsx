@@ -12,7 +12,9 @@ import ComparePage from "./pages/ComparePage.jsx";
 import CustomerListPage from "./pages/CustomerListPage.jsx";
 import AddCustomerPage from "./pages/AddCustomerPage.jsx";
 import CustomerDetailsPage from "./pages/CustomerDetailsPage.jsx";
+import EditCustomerPage from "./pages/EditCustomerPage.jsx";
 import CustomerInterestedPropertiesPage from "./pages/CustomerInterestedPropertiesPage.jsx";
+import CustomerMatchingPropertiesPage from "./pages/CustomerMatchingPropertiesPage.jsx";
 import CustomerRequirementsPage from "./pages/CustomerRequirementsPage.jsx";
 import BrokerListPage from "./pages/BrokerListPage.jsx";
 import AddBrokerPage from "./pages/AddBrokerPage.jsx";
@@ -50,6 +52,11 @@ function App() {
           path="/customers/:customerId/requirements"
           element={<CustomerRequirementsPage />}
         />
+        <Route
+          path="/customers/:customerId/matching-properties"
+          element={<CustomerMatchingPropertiesPage />}
+        />
+        <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
         <Route path="/customers/:id" element={<CustomerDetailsPage />} />
 
         {/* Private/internal broker directory */}

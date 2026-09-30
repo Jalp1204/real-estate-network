@@ -13,6 +13,7 @@ import {
   AVAILABILITIES,
   SOURCE_TYPES,
   PROPERTY_SORTS,
+  AMENITIES,
 } from "../constants/propertyOptions.js";
 
 // Default sort: most recently updated first.
@@ -162,6 +163,90 @@ function buildFilter(filters = {}) {
   return filter;
 }
 
+// Builds a MongoDB filter from a customer's requirements document.
+//
+// This is the deterministic V1 requirement -> property mapping used by the
+// private "Find Matching Properties" flow. There is no scoring, ranking or
+// fuzzy logic: each requirement field either adds an exact restriction or is
+// ignored when empty. Returns { filter, filterCount }, where filterCount is the
+// number of active filter groups (0 means the requirements impose no
+// restriction at all).
+//
+// Semantics:
+//   budget.min        -> property.price.amount >= min
+//   budget.max        -> property.price.amount <= max
+//   locations[]       -> property.locationId in locations (ANY)
+//   bhk[]             -> property.bhk in bhk (ANY)
+//   propertyTypes[]   -> property.propertyType in propertyTypes (ANY)
+//   minArea           -> property.area >= minArea
+//   possession[]      -> property.possession.status in possession (ANY)
+//   amenities[]       -> property.amenities contains ALL selected (AND)
+export function buildRequirementFilter(requirement) {
+  const source = requirement ?? {};
+  const filter = {};
+  let filterCount = 0;
+
+  const min = Number.isFinite(source?.budget?.min) ? source.budget.min : null;
+  const max = Number.isFinite(source?.budget?.max) ? source.budget.max : null;
+
+  if (min !== null || max !== null) {
+    const priceFilter = {};
+    if (min !== null) priceFilter.$gte = min;
+    if (max !== null) priceFilter.$lte = max;
+    filter["price.amount"] = priceFilter;
+    filterCount += 1;
+  }
+
+  // locations may be raw ObjectIds or populated Location documents.
+  const locationIds = (Array.isArray(source.locations) ? source.locations : [])
+    .map((loc) => (loc && typeof loc === "object" && loc._id ? loc._id : loc))
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+  if (locationIds.length > 0) {
+    filter.locationId = { $in: locationIds };
+    filterCount += 1;
+  }
+
+  const bhk = (Array.isArray(source.bhk) ? source.bhk : []).filter((value) =>
+    Number.isInteger(value)
+  );
+  if (bhk.length > 0) {
+    filter.bhk = { $in: bhk };
+    filterCount += 1;
+  }
+
+  const propertyTypes = (
+    Array.isArray(source.propertyTypes) ? source.propertyTypes : []
+  ).filter((value) => PROPERTY_TYPES.includes(value));
+  if (propertyTypes.length > 0) {
+    filter.propertyType = { $in: propertyTypes };
+    filterCount += 1;
+  }
+
+  if (Number.isFinite(source.minArea)) {
+    filter.area = { $gte: source.minArea };
+    filterCount += 1;
+  }
+
+  const possession = (
+    Array.isArray(source.possession) ? source.possession : []
+  ).filter((value) => POSSESSION_STATUSES.includes(value));
+  if (possession.length > 0) {
+    filter["possession.status"] = { $in: possession };
+    filterCount += 1;
+  }
+
+  const amenities = (Array.isArray(source.amenities) ? source.amenities : [])
+    .filter((value) => AMENITIES.includes(value));
+  if (amenities.length > 0) {
+    // Every selected amenity must be present on the property.
+    filter.amenities = { $all: amenities };
+    filterCount += 1;
+  }
+
+  return { filter, filterCount };
+}
+
 // Resolves the optional `sort` query parameter to one of the shared
 // PROPERTY_SORTS values. Absent means the default; an unknown value is a 400.
 function resolveSort(raw) {
@@ -270,15 +355,18 @@ export async function getPropertyById(id) {
 
 // Public/customer-facing property shape.
 //
-// Strips the internal `source` relationship (sourceType + brokerId) so no
-// broker/source metadata ever reaches customer-facing responses. This is a
-// response-boundary sanitizer only: the database value is never modified.
+// Strips the internal `source` relationship (sourceType + brokerId) and the
+// internal-only `internalNotes` array so no broker/source metadata or internal
+// notes ever reach customer-facing responses. This is a response-boundary
+// sanitizer only: the database value is never modified, and the intentional
+// public `verification` field is preserved exactly as-is.
 // Uses toJSON() so the serialized shape (and absence of `__v`) matches the
 // previous behavior exactly.
 export function toPublicProperty(property) {
   const obj =
     typeof property.toJSON === "function" ? property.toJSON() : { ...property };
   delete obj.source;
+  delete obj.internalNotes;
   return obj;
 }
 
